@@ -1,7 +1,7 @@
-import pandas as pd
-import numpy as np
+import pandas as pd #raham
+import numpy as np#raham
 from sklearn.model_selection import  RandomizedSearchCV
-from sklearn.preprocessing import  LabelEncoder,StandardScaler
+from sklearn.preprocessing import  LabelEncoder,StandardScaler #raham
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.tree import DecisionTreeClassifier
@@ -25,7 +25,7 @@ test.columns = test.columns.str.strip()
 train_data.drop_duplicates(inplace=True)
 train_data.reset_index(drop=True, inplace=True)
 
-#======Handling null values====== Rahma
+#======Handling null values======
 col_question=['workclass','occupation','native-country']
 for col in col_question:
     train_data[col]=train_data[col].str.strip().replace('?',np.nan)
@@ -34,13 +34,13 @@ for col in col_question:
     train_data[col]=train_data[col].fillna(mode_value)
     test[col]=test[col].fillna(mode_value)
 
-#======Encoding====== Rahma
+#======Encoding======
 #Map Income and Sex to binary integers
 train_data['Income'] = train_data['Income'].str.strip().map({'<=50K': 0, '>50K': 1})
 train_data['sex'] = train_data['sex'].str.strip().map({'Male': 1, 'Female': 0})
 test['sex'] = test['sex'].str.strip().map({'Male': 1, 'Female': 0})
 
-#======Label Encoder======Rahma
+#======Label Encoder======
 #Convert categorical columns to numerical values
 categorical_cols = ['workclass', 'occupation', 'native-country', 'race', 'marital-status', 'education', 'relationship']
 for col in categorical_cols:
@@ -52,7 +52,7 @@ for col in categorical_cols:
     train_data[col] = le.transform(train_data[col])
     test[col] = le.transform(test[col])
 
-#======VISUALIZATION====== Sarah
+#======VISUALIZATION======
 def plot_correlation_heatmap(df):
     numeric_df = df.select_dtypes(include=[np.number])
     plt.figure(figsize=(12, 10))
@@ -104,7 +104,7 @@ def plot_outliers_box(df, numeric_col):
     plt.show()
 plot_outliers_box(train_data, 'age')
 
-#====== 6. Feature Selection ====== Rodina
+#====== 6. Feature Selection ======
 #Drop columns
 columns_to_drop = ['education','fnlwgt']
 train_data.drop(columns=columns_to_drop, inplace=True,errors='ignore')
@@ -120,7 +120,7 @@ def plot_correlation_heatmap(df):
     plt.show()
 plot_correlation_heatmap(train_data)
 
-#======Outlier Handling====== Rodina
+#======Outlier Handling======
 normal_outlier_cols = ['age', 'hours-per-week']
 for col in normal_outlier_cols:
     Q1 = train_data[col].quantile(0.25)
@@ -169,21 +169,21 @@ plot_outliers_box(train_data, 'capital-loss')
 
 
 
-#======split====== Sahar
+#======split======
 y_train= train_data['Income']
 X_train = train_data.drop('Income', axis=1)
 y_test = test['Income'].str.strip().map({'<=50K.': 0, '>50K.': 1})
 X_test = test.drop('Income', axis=1)
 X_test = X_test.reindex(columns=X_train.columns, fill_value=0)
 
-#======scaling====== Rodina
+#======scaling======
 scaler = StandardScaler()
 numeric_cols = ['age', 'education-num', 'capital-gain', 'capital-loss', 'hours-per-week']
 X_train[numeric_cols] = scaler.fit_transform(X_train[numeric_cols])
 X_test[numeric_cols] = scaler.transform(X_test[numeric_cols])
 
 #======HYPERPARAMETERS======
-#Decision Tree === Sahar
+#Decision Tree
 dt_params = {
     'max_depth': [5,10,15,None],
     'min_samples_split': [2,5,10]
@@ -191,7 +191,7 @@ dt_params = {
 dt_grid = RandomizedSearchCV(DecisionTreeClassifier(),dt_params,n_iter=5,cv=3)
 dt_grid.fit(X_train, y_train)
 
-#Random Forest======Rawan
+#Random Forest
 rf_params = {
     'n_estimators': [50,100,200],
     'max_depth': [5,10,20,None],
@@ -200,7 +200,7 @@ rf_params = {
 rf_grid = RandomizedSearchCV(RandomForestClassifier(random_state=42),rf_params,n_iter=5,cv=3)
 rf_grid.fit(X_train, y_train)
 
-#XGBoost====Salma
+#XGBoost
 xgb_params = {
     'n_estimators': [50,100,200],
     'max_depth': [3,6,10],
@@ -212,7 +212,7 @@ xgb_grid.fit(X_train, y_train)
 #======modeling======
 
 def train_model(X_train, y_train, X_test, y_test):
-    #Decision Tree ===== Sahar
+    #Decision Tree
     dt = DecisionTreeClassifier(max_depth=10, random_state=42)
     dt.fit(X_train, y_train)
     dt_preds = dt.predict(X_test)
@@ -228,7 +228,7 @@ def train_model(X_train, y_train, X_test, y_test):
     print(classification_report(y_test, dt_preds))
     print("-" * 30)
 
-    #Logistic Regression ======Rawan
+    #Logistic Regression
     lr = LogisticRegression(C=0.1, solver='liblinear')
     lr.fit(X_train, y_train)
     lr_preds = lr.predict(X_test)
@@ -244,7 +244,7 @@ def train_model(X_train, y_train, X_test, y_test):
     print(classification_report(y_test, lr_preds))
     print("-" * 30)
 
-    #Random Forest======Rawan
+    #Random Forest
     rf = rf_grid.best_estimator_
     rf.fit(X_train, y_train)
     rf_preds = rf.predict(X_test)
@@ -260,7 +260,7 @@ def train_model(X_train, y_train, X_test, y_test):
     print(classification_report(y_test, rf_preds))
     print("-" * 30)
 
-    #XGBoost Classifier====Salma
+    #XGBoost Classifier
     print("Training XGBoost... Please wait...")
     xgb_model = xgb_grid.best_estimator_
     xgb_model.fit(X_train, y_train)
@@ -277,7 +277,7 @@ def train_model(X_train, y_train, X_test, y_test):
     print(classification_report(y_test, xgb_preds))
     print("-" * 30)
 
-    #SVM====Salma
+    #SVM
     print("Training SVM... Please wait...")
     svm_model = SVC(kernel='linear', C=1.0, class_weight='balanced', random_state=42)
     svm_model.fit(X_train, y_train)
